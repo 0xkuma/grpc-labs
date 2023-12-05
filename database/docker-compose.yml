@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: Users
+    ports:
+      - 5432:5432
+    volumes:
+      - ./users/data:/var/lib/postgresql/data
