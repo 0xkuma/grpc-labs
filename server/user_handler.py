@@ -8,6 +8,7 @@ from argon2 import PasswordHasher, exceptions
 class User():
     def __init__(self):
         self.db = Database()
+        self.retry = 0
 
     @staticmethod
     def is_validate_password(password: str) -> bool:
@@ -26,13 +27,26 @@ class User():
         return False
 
     def create_user(self, username: str, password: str, salt: str, email: str) -> str:
-        try:
-            res = self.db.execute("INSERT INTO users(username, e_password, salt, email) VALUES (%s, %s, %s, %s) RETURNING user_id", (
-                username, password, salt, email))
-            return res[0][0]
-        except Exception as e:
-            logging.error(e)
-            return ""
+        while self.retry < 3:
+            try:
+                print("Creating user")
+                res = self.db.execute("INSERT INTO users(username, e_password, salt, email) VALUES (%s, %s, %s, %s) RETURNING user_id", (
+                    username, password, salt, email))
+                print(res[0])
+                if res and res[0]:
+                    self.retry = 0
+                    return res[0][0]
+                else:
+                    self.db.rollback()
+                    self.retry += 1
+                    continue
+            except Exception as e:
+                logging.error(e)
+                self.db.create_connection()
+                self.retry += 1
+                continue
+        self.retry = 0
+        raise Exception("Failed to create user")
 
     def is_user_exists(self, username: str) -> bool:
         try:

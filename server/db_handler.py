@@ -19,10 +19,19 @@ class Database():
             db_name, db_user, db_password, db_host, db_port))
         self.cur = self.conn.cursor()
 
+    def create_connection(self):
+        print("Creating connection")
+        self.conn = connect(f"dbname=%s user=%s password=%s host=%s port=%s" % (
+            db_name, db_user, db_password, db_host, db_port))
+        self.cur = self.conn.cursor()
+
     def close_connection(self):
         print("Closing connection")
         self.cur.close()
         self.conn.close()
+
+    def rollback(self):
+        self.conn.rollback()
 
     def execute(self, query: str, params: tuple = None):
         try:
