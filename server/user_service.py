@@ -4,6 +4,7 @@ from concurrent import futures
 import sys
 import os
 from argon2 import PasswordHasher
+from google.protobuf.json_format import MessageToDict
 from user_handler import User
 from jwt_handler import generate_token
 sys.path.append(".")
@@ -41,6 +42,27 @@ class UserService(user_service_pb2_grpc.UserServiceServicer):
             context.set_details(str(e))
             return user_service_pb2.CreateUserResponse(user_id="")
 
+    def UpdateUser(self, request, context):
+        try:
+            token, user, update_mask = request.token, request.user, request.update_mask
+            if not token or not user:
+                raise ValueError("Missing necessary fields")
+            if update_mask is not None:
+                temp_dict = {}
+                message_dict = MessageToDict(user)
+                for path in update_mask.paths:
+                    keys = path.split('.')
+                    for key in keys:
+                        if key in message_dict:
+                            temp_dict[key] = message_dict[key]
+                print(temp_dict)
+            return user_service_pb2.UpdateUserResponse(message="OK")
+        except Exception as e:
+            logging.error(e)
+            grpc_status_code = grpc.StatusCode.INTERNAL
+            context.set_code(grpc_status_code)
+            context.set_details(str(e))
+            return user_service_pb2.UpdateUserResponse(message="")
 
     def Login(self, request, context):
         try:
