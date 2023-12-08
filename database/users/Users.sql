@@ -7,3 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
   salt VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_information (
+  user_id UUID PRIMARY KEY REFERENCES users(user_id),
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  age INT NOT NULL,
+  address VARCHAR(255) NOT NULL
+);
