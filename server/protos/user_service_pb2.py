@@ -11,23 +11,30 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import field_mask_pb2 as google_dot_protobuf_dot_field__mask__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19protos/user_service.proto\x12\x04user\"F\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08password\x18\x03 \x01(\t\"%\n\x12\x43reateUserResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"\x1e\n\rLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t2\x84\x01\n\x0bUserService\x12\x41\n\nCreateUser\x12\x17.user.CreateUserRequest\x1a\x18.user.CreateUserResponse\"\x00\x12\x32\n\x05Login\x12\x12.user.LoginRequest\x1a\x13.user.LoginResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19protos/user_service.proto\x12\x04user\x1a google/protobuf/field_mask.proto\"[\n\x04User\x12\x12\n\nfirst_name\x18\x01 \x01(\t\x12\x11\n\tlast_name\x18\x02 \x01(\t\x12\x0b\n\x03\x61ge\x18\x03 \x01(\x05\x12\x0e\n\x06gender\x18\x04 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x05 \x01(\t\"F\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08password\x18\x03 \x01(\t\"%\n\x12\x43reateUserResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"m\n\x11UpdateUserRequest\x12\r\n\x05token\x18\x01 \x01(\t\x12\x18\n\x04user\x18\x02 \x01(\x0b\x32\n.user.User\x12/\n\x0bupdate_mask\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"%\n\x12UpdateUserResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"\x1e\n\rLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t2\xb9\x01\n\x0bUserService\x12\x41\n\nCreateUser\x12\x17.user.CreateUserRequest\x1a\x18.user.CreateUserResponse\"\x00\x12\x32\n\x05Login\x12\x12.user.LoginRequest\x1a\x13.user.LoginResponse\"\x00\x12\x33\n\nUpdateUser\x12\x17.user.UpdateUserRequest\x1a\n.user.User\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.user_service_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_CREATEUSERREQUEST']._serialized_start=35
-  _globals['_CREATEUSERREQUEST']._serialized_end=105
-  _globals['_CREATEUSERRESPONSE']._serialized_start=107
-  _globals['_CREATEUSERRESPONSE']._serialized_end=144
-  _globals['_LOGINREQUEST']._serialized_start=146
-  _globals['_LOGINREQUEST']._serialized_end=196
-  _globals['_LOGINRESPONSE']._serialized_start=198
-  _globals['_LOGINRESPONSE']._serialized_end=228
-  _globals['_USERSERVICE']._serialized_start=231
-  _globals['_USERSERVICE']._serialized_end=363
+  _globals['_USER']._serialized_start=69
+  _globals['_USER']._serialized_end=160
+  _globals['_CREATEUSERREQUEST']._serialized_start=162
+  _globals['_CREATEUSERREQUEST']._serialized_end=232
+  _globals['_CREATEUSERRESPONSE']._serialized_start=234
+  _globals['_CREATEUSERRESPONSE']._serialized_end=271
+  _globals['_UPDATEUSERREQUEST']._serialized_start=273
+  _globals['_UPDATEUSERREQUEST']._serialized_end=382
+  _globals['_UPDATEUSERRESPONSE']._serialized_start=384
+  _globals['_UPDATEUSERRESPONSE']._serialized_end=421
+  _globals['_LOGINREQUEST']._serialized_start=423
+  _globals['_LOGINREQUEST']._serialized_end=473
+  _globals['_LOGINRESPONSE']._serialized_start=475
+  _globals['_LOGINRESPONSE']._serialized_end=505
+  _globals['_USERSERVICE']._serialized_start=508
+  _globals['_USERSERVICE']._serialized_end=693
 # @@protoc_insertion_point(module_scope)

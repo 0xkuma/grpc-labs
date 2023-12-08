@@ -2,9 +2,20 @@ syntax = "proto3";
 
 package user;
 
+import "google/protobuf/field_mask.proto";
+
 service UserService {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
     rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc UpdateUser(UpdateUserRequest) returns (User) {}
+}
+
+message User {
+    string first_name = 1;
+    string last_name = 2;
+    int32 age = 3;
+    string gender = 4;
+    string address = 5;
 }
 
 message CreateUserRequest {
@@ -15,6 +26,16 @@ message CreateUserRequest {
 
 message CreateUserResponse {
     string user_id = 1;
+}
+
+message UpdateUserRequest {
+    string token = 1;
+    User user = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateUserResponse {
+    string message = 1;
 }
 
 message LoginRequest {
