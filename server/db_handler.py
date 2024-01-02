@@ -1,5 +1,5 @@
 import logging
-from psycopg2 import connect
+from psycopg2 import connect, sql
 import configparser
 import os
 
@@ -32,6 +32,13 @@ class Database():
 
     def rollback(self):
         self.conn.rollback()
+
+    def set_clause(self, keys: list, values: list) -> str:
+        identifiers = map(sql.Identifier, keys)
+        values = map(sql.Literal, values)
+        set_clause = sql.SQL(', ').join(
+            sql.SQL("{} = {}").format(k, v) for k, v in zip(identifiers, values))
+        return set_clause
 
     def execute(self, query: str, params: tuple = None):
         try:
