@@ -6,7 +6,8 @@ import os
 from argon2 import PasswordHasher
 from google.protobuf.json_format import MessageToDict
 from user_handler import User
-from jwt_handler import generate_token
+from jwt_handler import JWT
+from redis_handler import RedisHandler
 sys.path.append(".")
 import protos.user_service_pb2 as user_service_pb2
 import protos.user_service_pb2_grpc as user_service_pb2_grpc
@@ -15,6 +16,8 @@ import protos.user_service_pb2_grpc as user_service_pb2_grpc
 class UserService(user_service_pb2_grpc.UserServiceServicer):
     def __init__(self):
         self.user = User()
+        self.jwt = JWT()
+        self.redis = RedisHandler()
 
     def CreateUser(self, request, context):
         try:
@@ -47,15 +50,30 @@ class UserService(user_service_pb2_grpc.UserServiceServicer):
             token, user, update_mask = request.token, request.user, request.update_mask
             if not token or not user:
                 raise ValueError("Missing necessary fields")
-            if update_mask is not None:
+            if update_mask.ByteSize() > 0:
+                print("Update mask is not None")
                 temp_dict = {}
                 message_dict = MessageToDict(user)
+                key_mapping = {
+                    "firstName": "first_name",
+                    "lastName": "last_name",
+                    "age": "age",
+                    "address": "address",
+                }
+                user_info = {key_mapping[k]: v for k,
+                             v in message_dict.items()}
                 for path in update_mask.paths:
                     keys = path.split('.')
                     for key in keys:
-                        if key in message_dict:
-                            temp_dict[key] = message_dict[key]
+                        if key in user_info:
+                            temp_dict[key] = user_info[key]
                 print(temp_dict)
+                res = self.user.update_user(token, temp_dict)
+                print(res)
+            else:
+                res = self.user.update_user(token, MessageToDict(user))
+                print(res)
+
             return user_service_pb2.UpdateUserResponse(message="OK")
         except Exception as e:
             logging.error(e)
@@ -69,9 +87,14 @@ class UserService(user_service_pb2_grpc.UserServiceServicer):
             username, password = request.username, request.password
             if not username or not password:
                 raise ValueError("Missing necessary fields")
-            if not self.user.authenticate_user(username, password):
-                raise ValueError("Incorrect password")
-            return user_service_pb2.LoginResponse(token=generate_token(username))
+            user_id = self.user.authenticate_user(username, password)
+            print(user_id)
+            if user_id != "":
+                s_token = self.jwt.generate_token(user_id, 1)
+                l_token = self.jwt.generate_token(user_id, 86400)
+                self.redis.set(f"u:{user_id}:lt", l_token, 86400)
+                return user_service_pb2.LoginResponse(token=s_token)
+            raise ValueError("Incorrect password")
         except ValueError as e:
             logging.error(e)
             grpc_status_code = grpc.StatusCode.INVALID_ARGUMENT
