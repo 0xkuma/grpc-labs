@@ -2,16 +2,20 @@ import logging
 import string
 import re
 import random
+from psycopg2 import sql
 from time import sleep
-from db_handler import Database
+from tenacity import retry, wait_exponential, stop_after_attempt, RetryError
 from argon2 import PasswordHasher, exceptions
+from db_handler import Database
+from jwt_handler import JWT
 
 
 class User():
     def __init__(self):
         self.db = Database()
+        self.jwt = JWT()
         self.attempts = 0
-        self.max_attempts = 3
+        self.max_attempts = 1
         self.max_backoff_time = 20
 
     def get_truncated_exponential_backoff_time(self, attempt: int) -> int:
@@ -72,10 +76,53 @@ class User():
         self.attempts = 0
         raise Exception("Failed to create user")
 
+    @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(3))
+    def update_user(self, token: str, user_info: dict) -> bool:
+        global content
+
+        try:
+            content = self.jwt.verify_token(token)
+            if content == "":
+                content = self.jwt.verify_token_from_redis(token)
+            if not content:
+                raise Exception("Invalid token")
+        except Exception as e:
+            logging.error(e)
+            raise Exception("Failed to update user due to an invalid token.")
+        try:
+            set_clause = self.db.set_clause(
+                user_info.keys(), user_info.values())
+
+            query = sql.SQL(
+                "UPDATE user_info SET {} WHERE user_id = (%s) RETURNING user_id")
+            command = query.format(set_clause)
+
+            params = (content['user_id'],)
+
+            res = self.db.execute(command, params)
+
+            if not res or not res[0]:
+                self.db.rollback()
+                raise Exception("Failed to update user. No results returned.")
+
+            return True
+
+        except RetryError as e:
+            logging.error(
+                "Failed to update user following 3 attempts with error: %s", e)
+            raise Exception(
+                "Failed to update user following 3 attempts.") from e
+
+        except Exception as e:
+            logging.error("Unexpected error during user update: %s", e)
+            self.db.create_connection()
+            raise Exception(
+                "Failed to update user due to an unexpected error.") from e
+
     def is_user_exists(self, username: str) -> bool:
         try:
             res = self.db.execute(
-                "SELECT user_id FROM users WHERE username = %s", (username,))
+                "SELECT user_id FROM users WHERE username = %s LIMIT 1", (username,))
             return True if res else False
         except Exception as e:
             logging.error(e)
@@ -84,14 +131,14 @@ class User():
     def authenticate_user(self, username: str, password: str) -> bool:
         try:
             res = self.db.execute(
-                "SELECT e_password, salt FROM users WHERE username = %s", (username,))
+                "SELECT user_id, e_password, salt FROM users WHERE username = %s LIMIT 1", (username,))
             if not res:
-                return False
-            e_password, salt = res[0]
-            return PasswordHasher().verify(e_password, password + salt)
+                return ""
+            user_id, e_password, salt = res[0]
+            return user_id if PasswordHasher().verify(e_password, password + salt) else ""
         except exceptions.VerifyMismatchError as e:
             logging.error(e)
-            return False
+            return ""
         except Exception as e:
             logging.error(e)
-            return False
+            return ""
