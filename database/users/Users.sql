@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_information (
+CREATE TABLE IF NOT EXISTS user_info (
   user_id UUID PRIMARY KEY REFERENCES users(user_id),
-  first_name VARCHAR(255) NOT NULL,
-  last_name VARCHAR(255) NOT NULL,
-  age INT NOT NULL,
-  address VARCHAR(255) NOT NULL
+  first_name VARCHAR(255),
+  last_name VARCHAR(255),
+  age INT,
+  address VARCHAR(255)
 );
